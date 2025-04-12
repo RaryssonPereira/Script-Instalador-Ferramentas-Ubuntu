@@ -40,3 +40,66 @@ Objetivo: Automatizar a instalação das ferramentas mais utilizadas em servidor
 ```bash
 git clone https://github.com/RaryssonPereira/ubuntu-init-tools.git
 cd ubuntu-init-tools
+```
+
+### 2. Torne o script executável
+
+```bash
+chmod +x ubuntu-init-tools.sh
+```
+
+### 3. Execute o script
+
+```bash
+./ubuntu-init-tools.sh
+```
+
+---
+
+### 💡 Dica: também é possível executar assim
+
+```bash
+bash ubuntu-init-tools.sh
+```
+
+Mas o script já especifica qual shell usar com a linha `#!/bin/bash` no topo.
+
+---
+
+## 🔎 Ferramentas incluídas no script
+
+- **vim** → editor de texto no terminal  
+- **byobu** → gerenciador de sessões no terminal  
+- **htop** → monitor de recursos do sistema  
+- **net-tools** → ferramentas de rede (ifconfig, netstat, etc.)  
+- **curl** e **wget** → transferência de dados via HTTP/FTP  
+- **whois** → consulta de domínios  
+- **dnsutils** → ferramentas DNS (dig, nslookup)  
+- **speedtest-cli** → teste de velocidade de internet no terminal  
+- **ufw** → firewall simplificado para o Ubuntu  
+- **neofetch** → exibe informações do sistema com estilo  
+- **git** → controle de versão e colaboração em código  
+
+💡 *Além de outras ferramentas opcionais úteis para desenvolvedores.*
+
+---
+
+## ❤️ Contribuindo
+
+Este projeto é feito **para a comunidade e com a comunidade**.  
+Se você tem sugestões, correções ou quer adicionar novas ferramentas, **envie um Pull Request ou abra uma Issue!**
+
+---
+
+## 📜 Licença
+
+Este projeto está sob a **licença MIT**.  
+Você pode **usar, modificar e compartilhar** livremente.
+
+---
+
+## ✨ Créditos
+
+Criado com carinho por **Rarysson**,  
+para ajudar outros a começarem sua jornada com **Linux e Ubuntu** da forma mais simples e poderosa possível.
+```
