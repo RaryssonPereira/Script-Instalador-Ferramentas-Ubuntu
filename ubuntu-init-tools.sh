@@ -1,31 +1,40 @@
 #!/bin/bash
 
-# Verifica se o script está sendo executado como root
+# Verifica execução como root
 if [ "$EUID" -ne 0 ]; then 
-  echo "❌ Por favor, execute este script como root (ou use sudo)"
+  echo "❌ Por favor, execute este script como root (ou use sudo)."
+  exit 1
+fi
+
+# Verifica se o sistema é Ubuntu
+if ! grep -qi ubuntu /etc/os-release; then
+  echo "❌ Este script é compatível somente com Ubuntu."
   exit 1
 fi
 
 echo "🔄 Atualizando lista de pacotes..."
-sudo apt update
+apt update
 
-# Função auxiliar para perguntar e instalar
+# Função auxiliar para perguntar e instalar com validação
 instalar_ferramenta() {
   local nome="$1"
   local descricao="$2"
   shift 2
-  read -p "👉 Deseja instalar $nome? ($descricao) [y/n]: " resposta
+  read -rp "👉 Deseja instalar $nome? ($descricao) [y/n]: " resposta
   if [[ "$resposta" =~ ^[Yy]$ ]]; then
     echo "🔧 Instalando $nome..."
-    sudo apt install -y "$@"
+    if apt install -y "$@"; then
+      echo "✅ $nome instalado com sucesso!"
+    else
+      echo "❌ Houve um erro ao instalar $nome!"
+    fi
   else
     echo "⏭️ Pulando $nome..."
   fi
 }
 
 # Ferramentas básicas
-echo ""
-echo "🚀 Instalando ferramentas básicas..."
+echo -e "\n🚀 Instalando ferramentas básicas..."
 
 instalar_ferramenta "Vim" "Editor de texto no terminal" vim
 instalar_ferramenta "Byobu" "Gerenciador de sessões no terminal (baseado em tmux)" byobu
@@ -40,24 +49,51 @@ instalar_ferramenta "UFW" "Firewall simples para Ubuntu" ufw
 instalar_ferramenta "Neofetch" "Mostra informações do sistema no terminal" neofetch
 instalar_ferramenta "Git" "Controle de versão e colaboração" git
 
-# Pergunta se deseja ver ferramentas adicionais
+# Pergunta se deseja configurar firewall após instalação
+if command -v ufw >/dev/null; then
+  read -rp "🛡️ Deseja configurar e ativar o firewall UFW agora (permitir SSH/HTTP/HTTPS)? [y/n]: " firewall
+  if [[ "$firewall" =~ ^[Yy]$ ]]; then
+    ufw allow OpenSSH
+    ufw allow http
+    ufw allow https
+    ufw enable
+    echo "✅ Firewall UFW configurado e ativado!"
+  else
+    echo "⏭️ Pulando configuração do firewall."
+  fi
+fi
+
+# Ferramentas adicionais (com escolha individual)
 echo ""
-read -p "🔍 Deseja visualizar e instalar ferramentas adicionais avançadas? [y/n]: " extras
+read -rp "🔍 Deseja visualizar ferramentas adicionais avançadas? [y/n]: " extras
 
 if [[ "$extras" =~ ^[Yy]$ ]]; then
-  echo ""
-  echo "✨ Ferramentas adicionais (avançadas ou úteis para desenvolvimento)"
+  echo -e "\n✨ Escolha quais ferramentas adicionais você deseja instalar:"
+
   instalar_ferramenta "Build-essential" "Compiladores e ferramentas C/C++" build-essential
   instalar_ferramenta "JQ" "Manipulação de arquivos JSON no terminal" jq
   instalar_ferramenta "Tree" "Visualização de diretórios em árvore" tree
   instalar_ferramenta "GnuPG" "Criptografia e assinatura de arquivos" gnupg
   instalar_ferramenta "Tmux" "Multiplexador de terminal alternativo ao byobu" tmux
   instalar_ferramenta "ZSH" "Shell alternativo poderoso" zsh
+  
+  # Docker e Docker Compose com pós-configuração
   instalar_ferramenta "Docker" "Containerização de aplicações" docker.io
   instalar_ferramenta "Docker Compose" "Orquestração de containers" docker-compose
+  
+  if command -v docker >/dev/null; then
+    echo "⚙️ Configurando Docker para execução sem sudo..."
+    usermod -aG docker "$SUDO_USER" && echo "✅ Usuário '$SUDO_USER' adicionado ao grupo docker."
+    systemctl enable docker
+    systemctl start docker
+  fi
 else
   echo "⏭️ Pulando ferramentas adicionais."
 fi
 
+# Limpeza final
 echo ""
-echo "✅ Instalação finalizada! Aproveite seu ambiente Ubuntu com as ferramentas que você escolheu!"
+echo "🧹 Limpando pacotes desnecessários..."
+apt autoremove -y >/dev/null
+
+echo -e "\n🎉 Ambiente Ubuntu pronto para uso! Boas codificações!"
