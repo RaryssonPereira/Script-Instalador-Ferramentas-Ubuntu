@@ -28,8 +28,10 @@ instalar_ferramenta() {
     else
       echo "❌ Houve um erro ao instalar $nome!"
     fi
+    return 0
   else
     echo "⏭️ Pulando $nome..."
+    return 1
   fi
 }
 
@@ -45,14 +47,20 @@ instalar_ferramenta "Wget" "Download de arquivos pela linha de comando" wget
 instalar_ferramenta "Whois" "Consulta de domínios" whois
 instalar_ferramenta "Dnsutils" "Ferramentas de DNS como dig" dnsutils
 instalar_ferramenta "Speedtest-cli" "Testar velocidade da internet" speedtest-cli
-instalar_ferramenta "UFW" "Firewall simples para Ubuntu" ufw
+
+# Instalação do UFW com controle de configuração posterior
+ufw_disponivel=false
+if instalar_ferramenta "UFW" "Firewall simples para Ubuntu" ufw; then
+  ufw_disponivel=true
+fi
+
 instalar_ferramenta "Neofetch" "Mostra informações do sistema no terminal" neofetch
 instalar_ferramenta "Git" "Controle de versão e colaboração" git
 
-# Pergunta se deseja configurar firewall após instalação
-if command -v ufw >/dev/null; then
-  read -rp "🛡️ Deseja configurar e ativar o firewall UFW agora (permitir SSH/HTTP/HTTPS)? [y/n]: " firewall
-  if [[ "$firewall" =~ ^[Yy]$ ]]; then
+# Pergunta se deseja configurar firewall somente se instalado agora
+if [[ "$ufw_disponivel" == true ]]; then
+  read -rp "🛡️ Deseja configurar e ativar o firewall UFW agora (permitir SSH/HTTP/HTTPS)? [y/n]: " configurar_ufw
+  if [[ "$configurar_ufw" =~ ^[Yy]$ ]]; then
     ufw allow OpenSSH
     ufw allow http
     ufw allow https
@@ -76,11 +84,11 @@ if [[ "$extras" =~ ^[Yy]$ ]]; then
   instalar_ferramenta "GnuPG" "Criptografia e assinatura de arquivos" gnupg
   instalar_ferramenta "Tmux" "Multiplexador de terminal alternativo ao byobu" tmux
   instalar_ferramenta "ZSH" "Shell alternativo poderoso" zsh
-  
+
   # Docker e Docker Compose com pós-configuração
   instalar_ferramenta "Docker" "Containerização de aplicações" docker.io
   instalar_ferramenta "Docker Compose" "Orquestração de containers" docker-compose
-  
+
   if command -v docker >/dev/null; then
     echo "⚙️ Configurando Docker para execução sem sudo..."
     usermod -aG docker "$SUDO_USER" && echo "✅ Usuário '$SUDO_USER' adicionado ao grupo docker."
