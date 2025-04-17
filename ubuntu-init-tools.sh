@@ -59,9 +59,16 @@ instalar_ferramenta "Git" "Controle de versão e colaboração" git
 
 # Pergunta se deseja configurar firewall somente se instalado agora
 if [[ "$ufw_disponivel" == true ]]; then
-  read -rp "🛡️ Deseja configurar e ativar o firewall UFW agora (permitir SSH/HTTP/HTTPS)? [y/n]: " configurar_ufw
+  echo -e "\n🛡️ A configuração padrão do UFW vai:"
+  echo "- Permitir conexões SSH na porta que você especificar"
+  echo "- Permitir conexões HTTP (porta 80)"
+  echo "- Permitir conexões HTTPS (porta 443)"
+  echo "- Bloquear todas as outras conexões não autorizadas"
+  read -rp "👉 Qual é a porta SSH que você utiliza para acessar esse servidor? [padrão: 22]: " porta_ssh
+  porta_ssh=${porta_ssh:-22}
+  read -rp "🔐 Deseja aplicar essa configuração e ativar o UFW? [y/n]: " configurar_ufw
   if [[ "$configurar_ufw" =~ ^[Yy]$ ]]; then
-    ufw allow OpenSSH
+    ufw allow "$porta_ssh"/tcp
     ufw allow http
     ufw allow https
     ufw enable
