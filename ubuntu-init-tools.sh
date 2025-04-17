@@ -64,8 +64,10 @@ if [[ "$ufw_disponivel" == true ]]; then
   echo "- Permitir conexões HTTP (porta 80)"
   echo "- Permitir conexões HTTPS (porta 443)"
   echo "- Bloquear todas as outras conexões não autorizadas"
-  read -rp "👉 Qual é a porta SSH que você utiliza para acessar esse servidor? [padrão: 22]: " porta_ssh
-  porta_ssh=${porta_ssh:-22}
+  porta_detectada=$(grep -i "^Port " /etc/ssh/sshd_config | awk '{print $2}' | head -n1)
+  porta_sugerida=${porta_detectada:-22}
+  read -rp "👉 Qual é a porta SSH que você utiliza para acessar esse servidor? [detectada: ${porta_sugerida}]: " porta_ssh
+  porta_ssh=${porta_ssh:-$porta_sugerida}
   read -rp "🔐 Deseja aplicar essa configuração e ativar o UFW? [y/n]: " configurar_ufw
   if [[ "$configurar_ufw" =~ ^[Yy]$ ]]; then
     ufw allow "$porta_ssh"/tcp
